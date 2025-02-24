@@ -1,0 +1,12 @@
+.border-round {
+    -webkit-border-radius: 9px;
+    -moz-border-radius: 9px;
+    border-radius: 9px;
+}
+
+.border-shadow {
+    border: solid 1px var(--withe) !important;
+    -moz-box-shadow: 0px 5px 7px 2px var(--gray-l);
+    -webkit-box-shadow: 0px 5px 7px 2px var(--gray-l);
+    box-shadow: 0px 5px 7px 2px var(--gray-l);
+}

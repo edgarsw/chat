@@ -1,1 +1,38 @@
 /* You can add global styles to this file, and also import other style files */
+@use "./styles/colors";
+@use "./styles/border";
+html,
+body {
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    scroll-behavior: smooth;
+    overflow-x: hidden;
+    font-family: Roboto, "Helvetica Neue", sans-serif;
+    min-height: 100vh;
+    position: relative;
+    padding-bottom: 3em;
+}
+
+.full-width{
+    width: 100%;
+}
+
+.ml-10{
+    margin-left: 10px;
+}
+
+.pt-10 {
+    padding-top: 10px;
+}
+
+.pb-10 {
+    padding-bottom: 10px;
+}
+
+.f-12 {
+    font-size: 12px;
+}
+

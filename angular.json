@@ -32,6 +32,7 @@
               }
             ],
             "styles": [
+              "@angular/material/prebuilt-themes/rose-red.css",
               "src/styles.scss"
             ],
             "scripts": []
@@ -50,7 +51,24 @@
                   "maximumError": "8kB"
                 }
               ],
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/enviroment.ts",
+                  "with": "src/environments/enviroment.prod.ts"
+                }
+              ],
               "outputHashing": "all"
+            },
+            "qa": {
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/enviroment.ts",
+                  "with": "src/environments/enviroment.qa.ts"
+                }
+              ],
+              "optimization": false,
+              "extractLicenses": false,
+              "sourceMap": true
             },
             "development": {
               "optimization": false,
@@ -65,6 +83,9 @@
           "configurations": {
             "production": {
               "buildTarget": "chat:build:production"
+            },
+            "qa": {
+              "buildTarget": "chat:build:qa"
             },
             "development": {
               "buildTarget": "chat:build:development"
@@ -91,6 +112,7 @@
               }
             ],
             "styles": [
+              "@angular/material/prebuilt-themes/rose-red.css",
               "src/styles.scss"
             ],
             "scripts": []
