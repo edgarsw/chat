@@ -10,7 +10,7 @@ import { map, tap } from 'rxjs';
 })
 export class ClientService {
 
-  private readonly LIMIT = 20;
+  private readonly LIMIT = 15;
   private BASE_URL = enviroment.baseUrl;
 
   constructor(

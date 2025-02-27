@@ -7,6 +7,7 @@ export interface Client {
     fechamensaje:      Date;
     nombre_cliente:    string;
     conversations:     Conversation[];
+    statusui?:         string;
 }
 
 export interface Conversation {

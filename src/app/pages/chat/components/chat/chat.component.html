@@ -10,7 +10,7 @@
         }
     </button>
     }
-    <!-- @if (selectedClient$ | async; as selectedClient) {
+    @if (selectedClient$ | async; as selectedClient) {
     <div class="title-toolbar">
         Cliente Seleccionado: {{selectedClient.mostrar_telefono}}
     </div>
@@ -18,10 +18,8 @@
     <div class="title-toolbar">
         Chat con angular
     </div>
-    } -->
-    <div class="title-toolbar">
-        Chat con angular
-    </div>
+    }
+    
 </mat-toolbar>
 <!-- </div> -->
 <mat-sidenav-container>
@@ -31,10 +29,10 @@
                 <!-- {{clientsSet.size}} -->
             </div>
         </div>
-        <div class="scroll-container">
+        <div class="scroll-container" (scroll)="onScrollClient($event)">
             <mat-nav-list>
                 @for (client of clients$ | async; track $index) {
-                <mat-list-item>
+                <mat-list-item [style.backgroud-color]="client.statusui || ''">
                     <div class="content-clients">
                         <div>
                             <div class="content-clients-phone">
@@ -63,7 +61,7 @@
         <div class="content">
 
             <div class="pt-10 pb-10 ml-10">
-                <!-- @if (selectedClient$ | async; as selectedClient) {
+                @if (selectedClient$ | async; as selectedClient) {
                 <div>
                     <div class="topic">{{ selectedClient.conversations[0].tema }}</div>
                     <div class="f-12">{{ selectedClient.conversations[0].created_at | date:"EEEE, d MMM y HH:mm"}}</div>
@@ -72,7 +70,7 @@
                 <div>
                     <p>No hay Conversación para el cliente seleccionado.</p>
                 </div>
-                } -->
+                }
             </div>
 
             <div #scrollableDiv class="messages-area">
