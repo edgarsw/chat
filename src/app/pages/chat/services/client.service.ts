@@ -4,6 +4,7 @@ import { HttpClient } from '@angular/common/http';
 import { enviroment } from '../../../../environments/enviroment.qa';
 import { Client } from '../model/client.model';
 import { map, tap } from 'rxjs';
+import { ClientStatus } from '../enum/client.status.enum';
 
 @Injectable({
   providedIn: 'root'
@@ -39,6 +40,7 @@ export class ClientService {
           return {
             data: response.data.map(client => ({
               ...client,
+              statusui: ClientStatus.NONE,
               uniqueId: client.idclient
             })),
             hasMore: response.data.length === this.LIMIT,

@@ -23,15 +23,22 @@ export class ClientQuery extends QueryEntity<ClientState> {
   }
 
   changeClientStatus(newSelectedclientId: number) {
-    const currentSlectedClient = Object.values(this.getValue().entities ?? {}).find(
-      client => client.statusui = ClientStatus.SELECTED
+    const currentSelectedClient = Object.values(this.getValue().entities ?? {}).find(
+      client => client.statusui === ClientStatus.SELECTED //missing the comparation only it had an =
     );
 
-    if (currentSlectedClient) {
-      this.store.update(currentSlectedClient.idclient, { statusui: ClientStatus.NONE });
+    if (currentSelectedClient) {
+      this.store.update(currentSelectedClient.idclient, { statusui: ClientStatus.NONE });
     }
 
     this.store.update(newSelectedclientId, { statusui: ClientStatus.SELECTED });
   }
+
+  selectClientById(id: number){
+    return this.selectEntity(id).pipe(
+      filter(client => !!client)
+    );
+  }
+  
 }
 

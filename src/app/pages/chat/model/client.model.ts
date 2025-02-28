@@ -1,3 +1,5 @@
+import { Conversation } from "./conversation.model";
+
 export interface Client {
     idclient:          number;
     whatsapp_telefono: string;
@@ -10,11 +12,3 @@ export interface Client {
     statusui?:         string;
 }
 
-export interface Conversation {
-    idconversation: number;
-    tema:           string;
-    created_at:     Date;
-    closed_at:      null;
-    isactiva:       number;
-    estatus:        string;
-}

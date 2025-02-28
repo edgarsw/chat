@@ -13,6 +13,10 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { map, Observable, Subject, take, takeUntil, tap } from 'rxjs';
 import { Client } from '../../model/client.model';
+import { ClientStatus } from '../../enum/client.status.enum';
+import { MessageService } from '../../services/message.service';
+import { MessageQuery } from '../../store/message.query';
+import { Message } from '../../model/messages.model';
 
 
 @Component({
@@ -30,6 +34,7 @@ export class ChatComponent {
   sidenav!: MatSidenav;
 
   protected clients$: Observable<Client[]> | undefined;
+  protected messages$: Observable<Message[]> | undefined;
 
   private destroy$ = new Subject<void>();
 
@@ -42,10 +47,13 @@ export class ChatComponent {
     private readonly clientQuery: ClientQuery,
     private readonly formBuilder: FormBuilder,
     private readonly observer: BreakpointObserver,
+    private readonly messageService: MessageService,
+    private readonly messageQuery: MessageQuery,
   ) { }
 
   ngOnInit(): void {
     this.clients$ = this.clientQuery.selectAll().pipe(map((clients: any[]) => [...clients]));
+    this.messages$ = this.messageQuery.selectAll().pipe(map((messages: any[]) => [...messages]));
     this.createForm();
     this.configSidebar();
     this.getClients();
@@ -90,6 +98,15 @@ export class ChatComponent {
     }
   }
 
+  protected onScrollMessages(event: Event) {
+    const element = event.target as HTMLElement;
+    if (element.scrollHeight - element.scrollTop === element.clientHeight) {
+
+    }
+  }
+
+
+
   private setFirstClient() {
     this.selectedClient$ = this.clientQuery.selectFirstClient()
       .pipe(
@@ -100,8 +117,39 @@ export class ChatComponent {
           if (!this.selectedClientValue || this.selectedClientValue.idclient !== client.idclient) {
             this.selectedClientValue = JSON.parse(JSON.stringify(client));
             this.clientQuery.changeClientStatus(client.idclient);
+            this.messageService.loadMoreMessages(client?.conversations[0]?.idconversation);
+            //this.clientQuery.updateClientStatus(client.idclient, ClientStatus.SELECTED);
           }
         }
         ));
+  }
+
+  protected onSelectClient(clientId: number) {
+
+    if (this.selectedClientValue?.idclient === clientId) return;
+
+    this.selectedClient$ = this.clientQuery.selectClientById(clientId).pipe(
+      take(1),
+      tap((client) => {
+        if (!client || !client.conversations?.length) return;
+
+        const conversionId = client.conversations[0].idconversation;
+
+        if (!this.selectedClientValue || this.selectedClientValue.idclient !== client.idclient) {
+          this.selectedClientValue = JSON.parse(JSON.stringify(client));
+          this.clientQuery.changeClientStatus(client.idclient);
+          this.messageQuery.resetToDefaul();
+          this.messageService.loadMoreMessages(conversionId);
+          this.scrollBottom();
+        }
+      })
+    )
+  }
+
+  private scrollBottom() {
+    const scrollMessageArea = document.querySelector('.messages-area') as HTMLElement;
+    if (scrollMessageArea) {
+      scrollMessageArea.scrollTop = scrollMessageArea.scrollHeight;
+    }
   }
 }
