@@ -3,20 +3,24 @@ import { enviroment } from "../../../../environments/enviroment.qa";
 import { MessageStore } from "../store/message.store";
 import { HttpClient } from "@angular/common/http";
 import { Message } from "../model/messages.model";
-import { map, tap } from "rxjs";
+import { map, Observable, tap } from "rxjs";
 import { Pagination } from "../model/pagination.model";
-import { NonNullableFormBuilder } from "@angular/forms";
+import { io, Socket } from 'socket.io-client';
 
 @Injectable({ providedIn: 'root' })
 export class MessageService {
 
-    private readonly LIMIT = 15;
+    private readonly LIMIT = 25;
     private BASE_URL = enviroment.baseUrl;
+
+    private socket: Socket;
 
     constructor(
         private messageStore: MessageStore,
         private http: HttpClient,
-    ) { }
+    ) {
+        this.socket = io(this.BASE_URL);
+     }
 
     loadMoreMessages(idconversation: number) {
         const state = this.messageStore.getValue();
@@ -49,9 +53,31 @@ export class MessageService {
                         currentPage: nextPage,
                         hasMore
                     });
-                    this.messageStore.add(data);
+                    //this.messageStore.add(data);
+                    this.messageStore.set([...data, ...Object.values(this.messageStore.getValue().entities || {})]); // Clonar para asegurar detección de cambios
                 })
             ).subscribe();
 
+    }
+
+    joinConversation(conversationId: number) {
+        this.socket.emit('joinConversation', conversationId);
+    }
+
+    sendMessage(conversationId: number, message: string, sender: string, employeeId: number) {
+        this.socket.emit('sendMessage', { conversationId, message, sender, employeeId });
+    }
+
+    // Escuchar nuevos mensajes
+    employeeMessagesWS(): Observable<Message> {
+        return new Observable(observer => {
+            this.socket.on('newMessageEmployee', message => observer.next(message.data));
+        });
+    }
+
+    clientMessagesWS(): Observable<Message> {
+        return new Observable(observer => {
+            this.socket.on('newMessageClient', response => observer.next(response.message.data));
+        });
     }
 }

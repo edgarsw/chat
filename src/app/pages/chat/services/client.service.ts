@@ -3,8 +3,9 @@ import { ClientStore } from '../store/client.store';
 import { HttpClient } from '@angular/common/http';
 import { enviroment } from '../../../../environments/enviroment.qa';
 import { Client } from '../model/client.model';
-import { map, tap } from 'rxjs';
+import { map, Observable, tap } from 'rxjs';
 import { ClientStatus } from '../enum/client.status.enum';
+import { io, Socket } from 'socket.io-client';
 
 @Injectable({
   providedIn: 'root'
@@ -14,10 +15,13 @@ export class ClientService {
   private readonly LIMIT = 15;
   private BASE_URL = enviroment.baseUrl;
 
+  private socket: Socket;
+
   constructor(
-    private clientStore: ClientStore,
-    private http: HttpClient,
-  ) { }
+    private readonly clientStore: ClientStore, 
+    private readonly http: HttpClient) {
+    this.socket = io(this.BASE_URL);
+  }
 
   loadMoreClients() {
     const state = this.clientStore.getValue();
@@ -61,5 +65,19 @@ export class ClientService {
         })
       ).subscribe();
 
+  }
+
+  // Escuchar nuevos mensajes
+  onNewConversation(): Observable<Client> {
+    return new Observable(observer => {
+      this.socket.on('newConversation', response => observer.next(response.client.data));
+    });
+  }
+
+  getClientById(id: number): Observable<Client> {
+    return this.http.get<any>(`${this.BASE_URL}/clients${id}`)
+      .pipe(
+        map((result) => result.data as Client)
+      );
   }
 }

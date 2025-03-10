@@ -26,7 +26,7 @@
     <mat-sidenav>
         <div class="content-status">
             <div class="circle-badge">
-                <!-- {{clientsSet.size}} -->
+                {{clientsSet.size}}
             </div>
         </div>
         <div class="scroll-container" (scroll)="onScrollClient($event)">
@@ -73,7 +73,7 @@
                 }
             </div>
 
-            <div #scrollableDiv class="messages-area" (scroll)="onScrollMessages($event)">
+            <div #messagesDiv class="messages-area" (scroll)="onScrollMessages($event)">
                 <div class="messages">
                     @for (message of messages$ | async; track message; let index = $index) {
                     <div class="border-round" [style.padding-top]="index === 0 ? '15px': ''"
@@ -90,7 +90,7 @@
                     <mat-form-field class="full-width">
                         <mat-label>Mensaje</mat-label>
                         <input matInput placeholder="Escriba su mensaje" formControlName="message"
-                             maxlength="300">
+                        (keydown.enter)="sendMessage()" maxlength="300">
                     </mat-form-field>
                 </form>
             </div>

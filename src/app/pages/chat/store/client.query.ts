@@ -4,6 +4,7 @@ import { QueryEntity } from '@datorama/akita';
 import { ClientState, ClientStore } from './client.store';
 import { filter } from 'rxjs';
 import { ClientStatus } from '../enum/client.status.enum';
+import { Client } from '../model/client.model';
 
 
 @Injectable({ providedIn: 'root' })
@@ -15,6 +16,20 @@ export class ClientQuery extends QueryEntity<ClientState> {
   selectFirstClient() {
     return this.selectFirst().pipe(
       filter(client => !!client)
+    );
+  }
+
+  moveClientToTop(id: number) {//modificar
+    const ids = this.store.getValue().ids as number[];
+    const index = ids.indexOf(id);
+
+    this.store.move(index, 0);
+  }
+
+  addClientToTop(client: Client) {
+    this.store.add(
+      { ...client, uniqueId: client.idclient } as any,
+      { prepend: true } // Lo coloca al inicio
     );
   }
 
@@ -39,6 +54,5 @@ export class ClientQuery extends QueryEntity<ClientState> {
       filter(client => !!client)
     );
   }
-  
 }
 
