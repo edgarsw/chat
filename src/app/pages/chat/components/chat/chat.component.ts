@@ -11,7 +11,7 @@ import { MatListModule } from '@angular/material/list';
 import { BreakpointObserver, LayoutModule } from '@angular/cdk/layout';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { debounceTime, delay, fromEvent, map, Observable, of, Subject, switchMap, take, takeUntil, tap } from 'rxjs';
+import { debounceTime, fromEvent, map, Observable, of, Subject, switchMap, take, takeUntil, tap } from 'rxjs';
 import { Client } from '../../model/client.model';
 import { MessageService } from '../../services/message.service';
 import { MessageQuery } from '../../store/message.query';
@@ -214,7 +214,7 @@ export class ChatComponent {
   onScrollMessages(event: Event) {
     const target = event.target as HTMLElement;
 
-    // If there arent more messages then returnn
+    // If there arent more messages then return
     if (this.isLoading || !this.messageStore.getValue().hasMore) {
       return;
     }
