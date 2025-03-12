@@ -3,7 +3,7 @@ import { enviroment } from "../../../../environments/enviroment.qa";
 import { MessageStore } from "../store/message.store";
 import { HttpClient } from "@angular/common/http";
 import { Message } from "../model/messages.model";
-import { map, Observable, tap } from "rxjs";
+import { map, Observable, of, tap } from "rxjs";
 import { Pagination } from "../model/pagination.model";
 import { io, Socket } from 'socket.io-client';
 
@@ -20,12 +20,12 @@ export class MessageService {
         private http: HttpClient,
     ) {
         this.socket = io(this.BASE_URL);
-     }
+    }
 
-    loadMoreMessages(idconversation: number) {
+    loadMoreMessages(idconversation: number): Observable<{ data: Message[] }> {
         const state = this.messageStore.getValue();
 
-        if (!state.hasMore) return;
+        if (!state.hasMore) return of({ data: [] });
 
         const nextPage = state.currentPage + 1;
 
@@ -37,7 +37,7 @@ export class MessageService {
             }
         }
 
-        this.http.post<{ data: Message[]; pagination: Pagination }>(`${this.BASE_URL}/messages/get`, payload)
+        return this.http.post<{ data: Message[]; pagination: Pagination }>(`${this.BASE_URL}/messages/get`, payload)
             .pipe(
                 map(response => {
                     return {
@@ -56,7 +56,7 @@ export class MessageService {
                     //this.messageStore.add(data);
                     this.messageStore.set([...data, ...Object.values(this.messageStore.getValue().entities || {})]); // Clonar para asegurar detección de cambios
                 })
-            ).subscribe();
+            );
 
     }
 

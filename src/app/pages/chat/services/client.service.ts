@@ -3,7 +3,7 @@ import { ClientStore } from '../store/client.store';
 import { HttpClient } from '@angular/common/http';
 import { enviroment } from '../../../../environments/enviroment.qa';
 import { Client } from '../model/client.model';
-import { map, Observable, tap } from 'rxjs';
+import { map, Observable, of, tap } from 'rxjs';
 import { ClientStatus } from '../enum/client.status.enum';
 import { io, Socket } from 'socket.io-client';
 
@@ -23,10 +23,10 @@ export class ClientService {
     this.socket = io(this.BASE_URL);
   }
 
-  loadMoreClients() {
+  loadMoreClients(): Observable<{ data: Client[] }> {
     const state = this.clientStore.getValue();
 
-    if (!state.hasMore) return;
+    if (!state.hasMore) return of({ data: [] });
 
     const nextPage = state.currentPage + 1;
 
@@ -38,7 +38,7 @@ export class ClientService {
       }
     }
 
-    this.http.post<{ data: Client[]; total: number }>(`${this.BASE_URL}/clients`, payload)
+    return this.http.post<{ data: Client[], hasMore: boolean }>(`${this.BASE_URL}/clients`, payload)
       .pipe(
         map(response => {
           return {
@@ -63,7 +63,7 @@ export class ClientService {
             this.clientStore.add(data);
           }
         })
-      ).subscribe();
+      );
 
   }
 

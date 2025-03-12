@@ -49,6 +49,10 @@ export class ClientQuery extends QueryEntity<ClientState> {
     this.store.update(newSelectedclientId, { statusui: ClientStatus.SELECTED });
   }
 
+  updateClientSentMessage(clientId: number, sentMessage: boolean) {
+    this.store.update(clientId, { sentMessage });
+  }
+
   selectClientById(id: number){
     return this.selectEntity(id).pipe(
       filter(client => !!client)

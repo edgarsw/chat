@@ -11,7 +11,7 @@ import { MatListModule } from '@angular/material/list';
 import { BreakpointObserver, LayoutModule } from '@angular/cdk/layout';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { debounceTime, fromEvent, map, Observable, of, Subject, switchMap, take, takeUntil, tap } from 'rxjs';
+import { catchError, debounceTime, fromEvent, map, Observable, of, Subject, switchMap, take, takeUntil, tap } from 'rxjs';
 import { Client } from '../../model/client.model';
 import { MessageService } from '../../services/message.service';
 import { MessageQuery } from '../../store/message.query';
@@ -101,8 +101,6 @@ export class ChatComponent {
           this.messageStore.upsert(message.idmessage, message);
           this.scrollToBottom();
         }
-        // count the new message from another client conversation
-        this.clientsSet.add(message.conversation?.client.idclient);
       });
   }
 
@@ -121,7 +119,7 @@ export class ChatComponent {
             this.messageStore.upsert(message.idmessage, message);
             this.clientsSet.delete(message.conversation.client?.idclient!);
             this.scrollToBottom();
-            this.clientQuery.moveClientToTop(message.conversation.client?.idclient!);
+            //this.clientQuery.moveClientToTop(message.conversation.client?.idclient!);
             return of(null); // do nothing else
           }
 
@@ -129,6 +127,7 @@ export class ChatComponent {
           if (foundClientId) {
             this.clientsSet.add(message.conversation.client?.idclient!);
             this.clientQuery.moveClientToTop(message.conversation.client?.idclient!);
+            this.clientQuery.updateClientSentMessage(message.conversation.client?.idclient!, true);
             return of(null); // do nothing else
           }
 
@@ -140,6 +139,7 @@ export class ChatComponent {
             this.clientStore.upsert(client.idclient, client);
             this.clientsSet.add(client.idclient);
             this.clientQuery.moveClientToTop(client.idclient);
+            this.clientQuery.updateClientSentMessage(client.idclient, true);
           }
         })
       )
@@ -187,7 +187,13 @@ export class ChatComponent {
   }
 
   private getClients() {
-    this.clientService.loadMoreClients();
+    this.clientService.loadMoreClients()?.pipe(
+      take(1),
+      catchError((error) => {
+        console.error('Error loading more clients:', error);
+        return of(null);
+      }),
+    ).subscribe();
   }
 
   private configSidebar() {
@@ -226,7 +232,7 @@ export class ChatComponent {
       const previousHeight = target.scrollHeight; // Save the height before to load more messages
 
       setTimeout(() => {
-        this.loadMoreMessages(); // Call the API after a bit delay
+        this.loadMoreMessagesScroll(); // Call the API after a bit delay
 
         setTimeout(() => {
           if (this.messageStore.getValue().hasMore) {
@@ -241,13 +247,23 @@ export class ChatComponent {
     }
   }
 
-  private loadMoreMessages() {
+  private loadMoreMessagesScroll() {
     if (this.selectedClientValue) {
       if (this.selectedClientValue?.conversations?.length > 0) {
         const conversionId = this.selectedClientValue.conversations[0].idconversation;
-        this.messageService.loadMoreMessages(conversionId);
+        this.loadMoreMessages(conversionId);
       }
     }
+  }
+
+  private loadMoreMessages(conversionId: number){
+    this.messageService.loadMoreMessages(conversionId)?.
+    pipe(
+      catchError((error) => {
+        console.error('Error loading more messages:', error);
+        return of(null);
+      })
+    ).subscribe();
   }
 
   private setFirstClient() {
@@ -259,7 +275,7 @@ export class ChatComponent {
 
           if (!this.selectedClientValue || this.selectedClientValue.idclient !== client.idclient) {
             this.selectedClientValue = JSON.parse(JSON.stringify(client));
-            this.messageService.loadMoreMessages(client?.conversations[0]?.idconversation);
+            this.loadMoreMessages(client?.conversations[0]?.idconversation);
             this.clientQuery.updateClientStatus(client.idclient, ClientStatus.SELECTED);
           }
         }
@@ -280,10 +296,11 @@ export class ChatComponent {
         if (!this.selectedClientValue || this.selectedClientValue.idclient !== client.idclient) {
           this.selectedClientValue = JSON.parse(JSON.stringify(client));
           this.clientQuery.changeClientStatus(client.idclient);
+          this.clientQuery.updateClientSentMessage(client.idclient, false);
           this.messageService.joinConversation(this.getConversationId()!);
           this.messageQuery.resetToDefaul();
           this.clientsSet.delete(client.idclient);
-          this.messageService.loadMoreMessages(conversionId);
+          this.loadMoreMessages(conversionId);
           this.scrollBottom();
         }
       })

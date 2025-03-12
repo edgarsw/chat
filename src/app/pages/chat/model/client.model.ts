@@ -10,5 +10,6 @@ export interface Client {
     nombre_cliente:    string;
     conversations:     Conversation[];
     statusui?:         string;
+    sentMessage?:      boolean;
 }
 
