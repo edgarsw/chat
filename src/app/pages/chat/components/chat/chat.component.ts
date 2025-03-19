@@ -1,17 +1,10 @@
 import { CommonModule } from '@angular/common';
-import { Component, ElementRef, ViewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, ViewChild } from '@angular/core';
 import { ClientService } from '../../services/client.service';
 import { ClientQuery } from '../../store/client.query';
-
-import { MatIconModule } from '@angular/material/icon';
-import { MatInputModule } from '@angular/material/input';
 import { MatSidenav, MatSidenavModule } from '@angular/material/sidenav';
-import { MatToolbarModule } from '@angular/material/toolbar';
-import { MatListModule } from '@angular/material/list';
-import { BreakpointObserver, LayoutModule } from '@angular/cdk/layout';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { catchError, debounceTime, fromEvent, map, Observable, of, Subject, switchMap, take, takeUntil, tap } from 'rxjs';
+import { FormBuilder, FormGroup } from '@angular/forms';
+import { catchError, debounceTime, filter, fromEvent, map, Observable, of, Subject, switchMap, take, takeUntil, tap } from 'rxjs';
 import { Client } from '../../model/client.model';
 import { MessageService } from '../../services/message.service';
 import { MessageQuery } from '../../store/message.query';
@@ -19,56 +12,43 @@ import { Message } from '../../model/messages.model';
 import { MessageStore } from '../../store/message.store';
 import { ClientStore } from '../../store/client.store';
 import { ClientStatus } from '../../enum/client.status.enum';
-
+import { HeaderComponent } from '../header/header.component';
+import { MessagesComponent } from '../messages/messages.component';
+import { ClientsComponent } from '../clients/clients.component';
+import { MessageFormComponent } from '../message-form/message-form.component';
+import { HeaderSidenavComponent } from '../header-sidenav/header-sidenav.component';
+import { TopicComponent } from '../topic/topic.component';
+import { scrollToBottomMessages } from '../../helpers/chat.helper';
 
 @Component({
   selector: 'app-chat',
-  imports: [CommonModule, MatIconModule, MatListModule, MatSidenavModule, MatToolbarModule, LayoutModule, FormsModule, ReactiveFormsModule,
-    MatFormFieldModule, MatInputModule],
+  imports: [CommonModule, MatSidenavModule, HeaderComponent, MessagesComponent, ClientsComponent, 
+    MessageFormComponent, HeaderSidenavComponent, TopicComponent],
   templateUrl: './chat.component.html',
-  styleUrl: './chat.component.scss'
+  styleUrl: './chat.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ChatComponent {
-
-  protected formGroup: FormGroup | undefined;
-
   @ViewChild(MatSidenav, { static: true })
   sidenav!: MatSidenav;
-
-  protected clients$: Observable<Client[]> | undefined;
-  protected messages$: Observable<Message[]> | undefined;
-
-  private destroy$ = new Subject<void>();
-
+  
   protected selectedClient$: Observable<Client> | undefined;
   protected selectedClientValue: Client | undefined;
-
-  @ViewChild('messagesDiv') messagesDiv!: ElementRef;
-  private isLoading = false; // Flag to avoid duplicate calls
-  private scrollEvent$ = fromEvent(document, 'scroll').pipe(debounceTime(300)); // Wait 300ms between events
-
+  
   protected clientsSet: Set<number> = new Set<number>();
 
+  private destroy$ = new Subject<void>();
 
   constructor(
     private readonly clientService: ClientService,
     private readonly clientQuery: ClientQuery,
     private readonly clientStore: ClientStore,
-    private readonly formBuilder: FormBuilder,
-    private readonly observer: BreakpointObserver,
     private readonly messageService: MessageService,
-    private readonly messageQuery: MessageQuery,
     private readonly messageStore: MessageStore,
   ) { }
 
   ngOnInit(): void {
-    this.clients$ = this.clientQuery.selectAll().pipe(map((clients: any[]) => [...clients]));
-    this.messages$ = this.messageQuery.selectAll().pipe(map((messages: any[]) => [...messages]));
-    this.scrollEvent$.subscribe((event: Event) => this.onScrollMessages(event));
-    this.createForm();
-    this.configSidebar();
-    this.getClients();
-    this.setFirstClient();
+    this.getClient();
     this.connectWS();
   }
 
@@ -77,8 +57,15 @@ export class ChatComponent {
     this.destroy$.complete();
   }
 
-  ngAfterViewInit(): void {
-    this.scrollToBottom();
+  getClient() {
+    this.clientQuery.selectedClient()
+      .pipe(
+        takeUntil(this.destroy$),
+        filter((client) => !!client),
+        tap((client) => {
+          this.selectedClientValue = client;
+        })
+      ).subscribe();
   }
 
   private connectWS() {
@@ -99,7 +86,7 @@ export class ChatComponent {
       .subscribe((message: any) => {
         if (message.conversation.idconversation === this.getConversationId()) {
           this.messageStore.upsert(message.idmessage, message);
-          this.scrollToBottom();
+          scrollToBottomMessages();
         }
       });
   }
@@ -118,7 +105,7 @@ export class ChatComponent {
           if (message.conversation.idconversation === this.getConversationId()) {
             this.messageStore.upsert(message.idmessage, message);
             this.clientsSet.delete(message.conversation.client?.idclient!);
-            this.scrollToBottom();
+            scrollToBottomMessages();
             //this.clientQuery.moveClientToTop(message.conversation.client?.idclient!);
             return of(null); // do nothing else
           }
@@ -165,170 +152,13 @@ export class ChatComponent {
     return this.clientStore.getValue().ids?.find(id => id === clientId);
   }
 
-  scrollToBottom() {
-    setTimeout(() => {
-      const messagesArea = document.querySelector('.messages-area') as HTMLElement;
-      if (messagesArea) {
-        messagesArea.scrollTop = messagesArea.scrollHeight;
-      }
-    }, 100);
+  public onSelectClient(message: any) {
+    const { idclient, conversationId } = message;
+    this.clientsSet.delete(idclient);
+    this.messageService.emitLoadMessages({scrollBottom: true, loadMessages: true, conversationId});
   }
 
   private getConversationId(): number | undefined {
     return this.selectedClientValue?.conversations[0].idconversation;
-  }
-
-  private createForm() {
-    this.formGroup = this.formBuilder.group(
-      {
-        message: ['']
-      }
-    );
-  }
-
-  private getClients() {
-    this.clientService.loadMoreClients()?.pipe(
-      take(1),
-      catchError((error) => {
-        console.error('Error loading more clients:', error);
-        return of(null);
-      }),
-    ).subscribe();
-  }
-
-  private configSidebar() {
-    this.observer.observe(["(max-width: 800px)"])
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((res) => {
-        if (res.matches) {
-          this.sidenav.mode = "over";
-          this.sidenav.close();
-        } else {
-          this.sidenav.mode = "side";
-          this.sidenav.open();
-        }
-      });
-  }
-
-  protected onScrollClient(event: Event) {
-    const element = event.target as HTMLElement;
-    if (element.scrollHeight - element.scrollTop === element.clientHeight) {
-      this.getClients();
-    }
-  }
-
-  onScrollMessages(event: Event) {
-    const target = event.target as HTMLElement;
-
-    // If there arent more messages then return
-    if (this.isLoading || !this.messageStore.getValue().hasMore) {
-      return;
-    }
-
-    // Detect if the user continues scrolling to top
-    if (target.scrollTop <= 0) {
-      this.isLoading = true; // Active load flag
-
-      const previousHeight = target.scrollHeight; // Save the height before to load more messages
-
-      setTimeout(() => {
-        this.loadMoreMessagesScroll(); // Call the API after a bit delay
-
-        setTimeout(() => {
-          if (this.messageStore.getValue().hasMore) {
-            const newHeight = target.scrollHeight;
-            // target.scrollTop = newHeight - previousHeight; // Keep the scroll position
-            target.scrollTo({ top: newHeight - previousHeight, behavior: 'smooth' }); // Keep the scroll position and to do it with smooth
-          }
-
-          this.isLoading = false; // Resets the flag after the load
-        }, 50);
-      }, 500); // Delay 500ms before to do the require
-    }
-  }
-
-  private loadMoreMessagesScroll() {
-    if (this.selectedClientValue) {
-      if (this.selectedClientValue?.conversations?.length > 0) {
-        const conversionId = this.selectedClientValue.conversations[0].idconversation;
-        this.loadMoreMessages(conversionId);
-      }
-    }
-  }
-
-  private loadMoreMessages(conversionId: number){
-    this.messageService.loadMoreMessages(conversionId)?.
-    pipe(
-      catchError((error) => {
-        console.error('Error loading more messages:', error);
-        return of(null);
-      })
-    ).subscribe();
-  }
-
-  private setFirstClient() {
-    this.selectedClient$ = this.clientQuery.selectFirstClient()
-      .pipe(
-        take(1),
-        tap((client) => {
-          if (!client || !client.conversations?.length) return;
-
-          if (!this.selectedClientValue || this.selectedClientValue.idclient !== client.idclient) {
-            this.selectedClientValue = JSON.parse(JSON.stringify(client));
-            this.loadMoreMessages(client?.conversations[0]?.idconversation);
-            this.clientQuery.updateClientStatus(client.idclient, ClientStatus.SELECTED);
-          }
-        }
-        ));
-  }
-
-  protected onSelectClient(clientId: number) {
-
-    if (this.selectedClientValue?.idclient === clientId) return;
-
-    this.selectedClient$ = this.clientQuery.selectClientById(clientId).pipe(
-      take(1),
-      tap((client) => {
-        if (!client || !client.conversations?.length) return;
-
-        const conversionId = client.conversations[0].idconversation;
-
-        if (!this.selectedClientValue || this.selectedClientValue.idclient !== client.idclient) {
-          this.selectedClientValue = JSON.parse(JSON.stringify(client));
-          this.clientQuery.changeClientStatus(client.idclient);
-          this.clientQuery.updateClientSentMessage(client.idclient, false);
-          this.messageService.joinConversation(this.getConversationId()!);
-          this.messageQuery.resetToDefaul();
-          this.clientsSet.delete(client.idclient);
-          this.loadMoreMessages(conversionId);
-          this.scrollBottom();
-        }
-      })
-    )
-  }
-
-  private scrollBottom() {
-    const scrollMessageArea = document.querySelector('.messages-area') as HTMLElement;
-    if (scrollMessageArea) {
-      scrollMessageArea.scrollTop = scrollMessageArea.scrollHeight;
-    }
-  }
-
-  sendMessage() {
-    if (this.formGroup?.get('message')?.value.trim()) {
-      this.messageService.sendMessage(this.getConversationId()!, this.formGroup?.get('message')?.value.trim(), 'empleado', 1);
-      this.formGroup?.get('message')?.setValue('');
-      this.clientQuery.moveClientToTop(this.selectedClientValue?.idclient!);
-      this.clientsScrollToTop();
-    }
-  }
-
-  clientsScrollToTop() {
-    setTimeout(() => {
-      const clientsArea = document.querySelector('.scroll-container') as HTMLElement;
-      if (clientsArea) {
-        clientsArea.scrollTop = 0;
-      }
-    }, 100);
   }
 }

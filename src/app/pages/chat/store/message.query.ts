@@ -11,7 +11,7 @@ export class MessageQuery extends QueryEntity<MessageState> {
   }
   
 
-  resetToDefaul(){
+  resetToDefault(){
     this.store.reset();
   }
 }

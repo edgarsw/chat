@@ -1,15 +1,15 @@
 
 import { Injectable } from '@angular/core';
 import { QueryEntity } from '@datorama/akita';
-import { ClientState, ClientStore } from './client.store';
-import { filter, map, Observable } from 'rxjs';
+import { ClientSignalState, ClientSignalStore } from './client-signal.store';
+import { filter } from 'rxjs';
 import { ClientStatus } from '../enum/client.status.enum';
 import { Client } from '../model/client.model';
 
 
 @Injectable({ providedIn: 'root' })
-export class ClientQuery extends QueryEntity<ClientState> {
-  constructor(protected override store: ClientStore) {
+export class ClientSignalQuery extends QueryEntity<ClientSignalState> {
+  constructor(protected override store: ClientSignalStore) {
     super(store);
   }
 
@@ -57,12 +57,6 @@ export class ClientQuery extends QueryEntity<ClientState> {
     }
 
     this.store.update(newSelectedclientId, { statusui: ClientStatus.SELECTED });
-  }
-  
-  selectedClient(): Observable<Client | undefined> {
-    return this.selectAll().pipe(
-      map(clients => clients.find(client => client.statusui === ClientStatus.SELECTED))
-    );
-  }
+  } 
 }
 

@@ -1,0 +1,31 @@
+@mixin flex-space {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.content-status {
+    @include flex-space;
+    padding-left: 5px;
+    /* Peso del texto */
+    position: sticky;
+}
+
+.circle-badge {
+    width: 40px;
+    /* Ajusta el tamaño según tus necesidades */
+    height: 40px;
+    /* Ajusta el tamaño según tus necesidades */
+    background-color: var(--primary-p);
+    /* Color de fondo del círculo */
+    color: white;
+    /* Color del texto */
+    border-radius: 50%;
+    /* Hace que el div sea redondo */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    /* Tamaño del texto */
+    font-weight: 500;
+}

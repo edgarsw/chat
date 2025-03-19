@@ -13,9 +13,3 @@ export interface Message {
     conversation: Conversation;
     employee:     Employee;
 }
-
-export interface LoadMessages {
-    scrollBottom:   boolean,
-    loadMessages:   boolean,
-    conversationId: number;
-}

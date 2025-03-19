@@ -6,6 +6,10 @@ export const routes: Routes = [
         loadChildren: () => import('./pages/chat/chat.routes').then(m => m.routes)
     },
     {
+        path: 'chat-signal',
+        loadChildren: () => import('./pages/chat-signals/chat-signals.routes').then(m => m.routes)
+    },
+    {
         path: '**', redirectTo: 'chat', pathMatch: 'full'
     }
 ];

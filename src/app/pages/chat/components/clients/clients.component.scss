@@ -1,0 +1,46 @@
+@mixin flex-space {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+// mat-nav-list {
+//     background-color: #123456; // Cambia este valor por el color que desees
+// }
+
+.scrollClient{
+    height: 80vh;
+    overflow-y: auto;
+}
+
+.content-clients{
+    @include flex-space;
+    &-phone {
+        font-size: 16px;
+        color: var(--black-m);
+    }
+    
+    &-name {
+        font-size: 11px;
+        color: var(--gray-p);
+    }
+    &-circle-badge {
+        width: 20px;
+        /* Ajusta el tamaño según tus necesidades */
+        height: 20px;
+        /* Ajusta el tamaño según tus necesidades */
+        background-color: var(--primary-p);
+        /* Color de fondo del círculo */
+        color: white;
+        /* Color del texto */
+        border-radius: 50%;
+        /* Hace que el div sea redondo */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        &-icon{
+            font-size: 14px !important;
+        }
+    }
+}
+

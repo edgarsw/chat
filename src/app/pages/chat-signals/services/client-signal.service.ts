@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { ClientStore } from '../store/client.store';
+import { ClientSignalStore } from '../store/client-signal.store';
 import { HttpClient } from '@angular/common/http';
 import { enviroment } from '../../../../environments/enviroment.qa';
 import { Client } from '../model/client.model';
@@ -10,7 +10,7 @@ import { io, Socket } from 'socket.io-client';
 @Injectable({
   providedIn: 'root'
 })
-export class ClientService {
+export class ClientSignalService {
 
   private readonly LIMIT = 15;
   private BASE_URL = enviroment.baseUrl;
@@ -19,7 +19,7 @@ export class ClientService {
   private client$ = new BehaviorSubject<Client | undefined>(undefined);
 
   constructor(
-    private readonly clientStore: ClientStore,
+    private readonly clientStore: ClientSignalStore,
     private readonly http: HttpClient) {
     this.socket = io(this.BASE_URL);
   }

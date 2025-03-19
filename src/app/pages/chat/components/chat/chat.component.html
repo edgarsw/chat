@@ -1,99 +1,18 @@
 <!-- <div class="dark-theme"> -->
-<mat-toolbar color="primary">
-    @if (sidenav.mode === 'over') {
-    <button mat-icon-button (click)="sidenav.toggle()">
-        @if (!sidenav.opened) {
-        <mat-icon fontIcon="menu"></mat-icon>
-        }
-        @else {
-        <mat-icon fontIcon="close"></mat-icon>
-        }
-    </button>
-    }
-    @if (selectedClient$ | async; as selectedClient) {
-    <div class="title-toolbar">
-        Cliente Seleccionado: {{selectedClient.mostrar_telefono}}
-    </div>
-    } @else {
-    <div class="title-toolbar">
-        Chat con angular
-    </div>
-    }
-    
-</mat-toolbar>
 <!-- </div> -->
+<app-header [sidenav]="sidenav"></app-header>
 <mat-sidenav-container>
-    <mat-sidenav>
-        <div class="content-status">
-            <div class="circle-badge">
-                {{clientsSet.size}}
-            </div>
-        </div>
-        <div class="scroll-container" (scroll)="onScrollClient($event)">
-            <mat-nav-list>
-                @for (client of clients$ | async; track $index) {
-                <mat-list-item [style.background-color]="client.statusui || ''" (click)="onSelectClient(client.idclient)">
-                    <div class="content-clients">
-                        <div>
-                            <div class="content-clients-phone">
-                                {{ client.mostrar_telefono }}
-                            </div>
-                            <div class="content-clients-name">
-                                {{client.nombre_cliente}}
-                            </div>
-                        </div>
-                        <div>
-                            @if (client.sentMessage) {
-                            <div class="content-clients-circle-badge">
-                                <span class="material-icons content-clients-circle-badge-icon">
-                                    send
-                                </span>
-                            </div>
-                            }
-                        </div>
-                    </div>
-                </mat-list-item>
-                }
-            </mat-nav-list>
-        </div>
-    </mat-sidenav>
+    <mat-sidenav #sidenav>
+        <app-header-sidenav [numClientsMessages]="clientsSet.size"></app-header-sidenav>
+        <app-clients [sidenav]="sidenav" (imitSelectedClient)="onSelectClient($event)"></app-clients>
+    </mat-sidenav>    
     <mat-sidenav-content>
         <div class="content">
+            <app-topic></app-topic>
 
-            <div class="pt-10 pb-10 ml-10">
-                @if (selectedClient$ | async; as selectedClient) {
-                <div>
-                    <div class="topic">{{ selectedClient.conversations[0].tema }}</div>
-                    <div class="f-12">{{ selectedClient.conversations[0].created_at | date:"EEEE, d MMM y HH:mm"}}</div>
-                </div>
-                } @else {
-                <div>
-                    <p>No hay Conversación para el cliente seleccionado.</p>
-                </div>
-                }
-            </div>
+            <app-messages></app-messages>
 
-            <div #messagesDiv class="messages-area" (scroll)="onScrollMessages($event)">
-                <div class="messages">
-                    @for (message of messages$ | async; track message; let index = $index) {
-                    <div class="border-round" [style.padding-top]="index === 0 ? '15px': ''"
-                        [ngClass]="message.enviadoPor === 'cliente' ? 'client_message':'employee_message'">
-                        {{message.mensaje}}
-                        <div class="messages-area-hour">{{message.created_at | date:"EEEE, d MMM y HH:mm"}}
-                            {{message?.employee?.alias}}</div>
-                    </div>
-                    }
-                </div>
-            </div>
-            <div>
-                <form autocomplete="off" [formGroup]="formGroup!">
-                    <mat-form-field class="full-width">
-                        <mat-label>Mensaje</mat-label>
-                        <input matInput placeholder="Escriba su mensaje" formControlName="message"
-                        (keydown.enter)="sendMessage()" maxlength="300">
-                    </mat-form-field>
-                </form>
-            </div>
+            <app-message-form></app-message-form>
         </div>
     </mat-sidenav-content>
 </mat-sidenav-container>

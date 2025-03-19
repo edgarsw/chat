@@ -1,35 +1,25 @@
 import { Injectable } from "@angular/core";
 import { enviroment } from "../../../../environments/enviroment.qa";
-import { MessageStore } from "../store/message.store";
+import { MessageSignalStore } from "../store/message-signal.store";
 import { HttpClient } from "@angular/common/http";
-import { LoadMessages, Message } from "../model/messages.model";
-import { BehaviorSubject, map, Observable, of, tap } from "rxjs";
+import { Message } from "../model/messages.model";
+import { map, Observable, of, tap } from "rxjs";
 import { Pagination } from "../model/pagination.model";
 import { io, Socket } from 'socket.io-client';
 
 @Injectable({ providedIn: 'root' })
-export class MessageService {
+export class MessageSignalService {
 
     private readonly LIMIT = 25;
     private BASE_URL = enviroment.baseUrl;
 
-    protected loadMessages$ = new BehaviorSubject<LoadMessages>({ scrollBottom: false, loadMessages: false, conversationId: 0 });
-
     private socket: Socket;
 
     constructor(
-        private messageStore: MessageStore,
+        private messageStore: MessageSignalStore,
         private http: HttpClient,
     ) {
         this.socket = io(this.BASE_URL);
-    }
-
-    get loadMessages() {
-        return this.loadMessages$.asObservable();
-    }
-
-    emitLoadMessages(loadMessages: LoadMessages) {
-        this.loadMessages$.next(loadMessages);
     }
 
     loadMoreMessages(idconversation: number): Observable<{ data: Message[] }> {

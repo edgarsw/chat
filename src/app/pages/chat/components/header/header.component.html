@@ -1,0 +1,21 @@
+<mat-toolbar color="primary">
+    @if (sidenav.mode === 'over') {
+    <button mat-icon-button (click)="sidenav.toggle()">
+        @if (!sidenav.opened) {
+        <mat-icon fontIcon="menu"></mat-icon>
+        }
+        @else {
+        <mat-icon fontIcon="close"></mat-icon>
+        }
+    </button>
+    }
+    @if (selectedClient$ | async; as selectedClient) {
+    <div class="title-toolbar">
+        Cliente Seleccionado: {{selectedClient.mostrar_telefono}}
+    </div>
+    } @else {
+    <div class="title-toolbar">
+        WhatsApp The Evolution
+    </div>
+    }
+</mat-toolbar>
