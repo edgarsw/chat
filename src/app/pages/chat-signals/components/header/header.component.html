@@ -9,14 +9,14 @@
         }
     </button>
     }
-    @if (selectedClient$ | async; as selectedClient) {
+    @if (selectedClient() !== null) {
+    @let client = selectedClient();
     <div class="title-toolbar">
-        Cliente Seleccionado: {{selectedClient.mostrar_telefono}}
+        Cliente Seleccionado: {{client?.mostrar_telefono}}
     </div>
     } @else {
     <div class="title-toolbar">
-        Chat con angular
+        WhatsApp The Evolution
     </div>
     }
-    
 </mat-toolbar>

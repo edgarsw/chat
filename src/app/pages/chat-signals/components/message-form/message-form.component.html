@@ -1,0 +1,9 @@
+<div>
+    <form autocomplete="off" [formGroup]="formGroup!">
+        <mat-form-field class="full-width">
+            <mat-label>Mensaje</mat-label>
+            <input matInput placeholder="Escriba su mensaje" formControlName="message"
+                (keydown.enter)="sendMessage()" maxlength="300">
+        </mat-form-field>
+    </form>
+</div>

@@ -1,84 +1,3 @@
-@mixin flex-space {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-mat-sidenav {
-    width: 250px;
-    border-right: none;
-    padding: 6px 0;
-    overflow-y: hidden;
-}
-
-// mat-nav-list {
-//     background-color: #123456; // Cambia este valor por el color que desees
-// }
-
-.title-toolbar {
-    flex: 1 1 auto;
-    text-align: center;
-}
-
-.scroll-container {
-    height: 80vh;
-    overflow-y: auto;
-}
-
-.content-clients{
-    @include flex-space;
-    &-phone {
-        font-size: 16px;
-        color: var(--black-m);
-    }
-    
-    &-name {
-        font-size: 11px;
-        color: var(--gray-p);
-    }
-    &-circle-badge {
-        width: 20px;
-        /* Ajusta el tamaño según tus necesidades */
-        height: 20px;
-        /* Ajusta el tamaño según tus necesidades */
-        background-color: var(--primary-p);
-        /* Color de fondo del círculo */
-        color: white;
-        /* Color del texto */
-        border-radius: 50%;
-        /* Hace que el div sea redondo */
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        &-icon{
-            font-size: 14px !important;
-        }
-    }
-}
-
-
-mat-sidenav-container {
-    height: calc(100vh - 65px);
-}
-
-// mat-sidenav-content {
-//     display: flex;
-//     flex-direction: column;
-//     height: 100%;
-// }
-
-.content {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    height: calc(100svh - 65px);
-    border-radius: 10px;
-    padding: 16px;
-    max-width: 1520px;
-    margin: 0 auto;
-    background-color: var(--gray-xl);
-}
-
 .messages-area {
     width: 98%;
     display: flex;
@@ -96,11 +15,6 @@ mat-sidenav-container {
     scrollbar-width: thin;
     /* Hace que la barra de desplazamiento sea más delgada */
     scrollbar-color: rgba(0, 0, 0, 0.3) rgba(0, 0, 0, 0.1);
-
-    &-hour {
-        font-size: 11px;
-        font-weight: 200;
-    }
 }
 
 /* Forzar la visibilidad del scroll */
@@ -130,6 +44,10 @@ mat-sidenav-container {
     /* Permite que crezca dentro de messages-area */
     min-height: calc(100% + 50px);
     /* Asegura un poco de espacio extra para forzar el scroll */
+    &-hour {
+        font-size: 11px;
+        font-weight: 200;
+    }
 }
 
 /* Estilos para mensajes de cliente y empleado */
@@ -152,11 +70,4 @@ mat-sidenav-container {
     background-color: var(--blue-ligth);
     align-self: flex-end;
     /* Alinea los mensajes del empleado a la derecha */
-}
-
-.topic {
-    font-size: 14px;
-    font-weight: 600;
-    padding-bottom: 5px;
-    letter-spacing: 1px;
 }

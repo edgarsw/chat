@@ -1,7 +1,7 @@
 import { Routes } from "@angular/router";
-import { ChatSignalComponent } from "./components/chat/chat-signal.component";
+import { ChatComponent } from "./components/chat/chat.component";
 
 export const routes: Routes = [
-    { path: '', component: ChatSignalComponent },
+    { path: '', component: ChatComponent },
     { path: '**', redirectTo: '' }
 ];

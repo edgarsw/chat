@@ -1,35 +1,25 @@
 import { Injectable } from '@angular/core';
-import { ClientSignalStore } from '../store/client-signal.store';
+import { ClientSignalsStore } from '../store/client.store';
 import { HttpClient } from '@angular/common/http';
 import { enviroment } from '../../../../environments/enviroment.qa';
 import { Client } from '../model/client.model';
-import { BehaviorSubject, map, Observable, of, tap } from 'rxjs';
+import { map, Observable, of, tap } from 'rxjs';
 import { ClientStatus } from '../enum/client.status.enum';
 import { io, Socket } from 'socket.io-client';
 
 @Injectable({
   providedIn: 'root'
 })
-export class ClientSignalService {
+export class ClientSignalsService {
 
   private readonly LIMIT = 15;
   private BASE_URL = enviroment.baseUrl;
   private socket: Socket;
 
-  private client$ = new BehaviorSubject<Client | undefined>(undefined);
-
   constructor(
-    private readonly clientStore: ClientSignalStore,
+    private readonly clientStore: ClientSignalsStore,
     private readonly http: HttpClient) {
     this.socket = io(this.BASE_URL);
-  }
-
-  get currentClient$(): Observable<Client | undefined> {
-    return this.client$.asObservable();
-  }
-
-  emitCurrentClient(client: Client): void {
-    this.client$.next(client);
   }
 
   loadMoreClients(): Observable<{ data: Client[] }> {

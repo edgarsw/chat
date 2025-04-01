@@ -1,0 +1,19 @@
+<div class="pt-10 pb-10 ml-10">
+    @if (selectedClient() !== null) {
+        @let client = selectedClient();        
+        @if (client && client.conversations && client.conversations.length > 0) {
+            <div>
+                <div class="topic">{{ client.conversations[0].tema }}</div>
+                <div class="f-12">{{ client.conversations[0].created_at | date:"EEEE, d MMM y HH:mm"}}</div>
+            </div>
+        } @else {
+            <div>
+                <p>No hay Conversaciones disponibles para este cliente.</p>
+            </div>
+        }
+    } @else {
+        <div>
+            <p>No hay Cliente seleccionado.</p>
+        </div>
+    }
+</div>

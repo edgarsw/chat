@@ -1,0 +1,18 @@
+<!-- <div class="dark-theme"> -->
+<!-- </div> -->
+<app-header [sidenav]="sidenav"></app-header>
+<mat-sidenav-container>
+    <mat-sidenav #sidenav>
+        <app-header-sidenav [numClientsMessages]="clientsSet.size"></app-header-sidenav>
+        <app-clients [sidenav]="sidenav" (imitSelectedClient)="onSelectClient($event)"></app-clients>
+    </mat-sidenav>    
+    <mat-sidenav-content>
+        <div class="content">
+            <app-topic></app-topic>
+
+            <app-messages></app-messages>
+
+            <app-message-form></app-message-form>
+        </div>
+    </mat-sidenav-content>
+</mat-sidenav-container>

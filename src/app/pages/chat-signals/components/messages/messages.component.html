@@ -1,0 +1,12 @@
+<div #messagesDiv class="messages-area" (scroll)="onScrollMessages($event)">
+    <div class="messages">
+        @for (message of messages$ | async; track message; let index = $index; let isLast = $last) {
+        <div class="border-round" [style.padding-top]="index === 0 ? '15px': ''"
+            [ngClass]="message.enviadoPor === 'cliente' ? 'client_message':'employee_message'">
+            {{message.mensaje}}
+            <div class="messages-hour">{{message.created_at | date:"EEEE, d MMM y HH:mm"}}
+                {{message?.employee?.alias}}</div>
+        </div>
+        }
+    </div>
+</div>

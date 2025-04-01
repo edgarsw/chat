@@ -16,20 +16,10 @@ export class ClientService {
   private BASE_URL = enviroment.baseUrl;
   private socket: Socket;
 
-  private client$ = new BehaviorSubject<Client | undefined>(undefined);
-
   constructor(
     private readonly clientStore: ClientStore,
     private readonly http: HttpClient) {
     this.socket = io(this.BASE_URL);
-  }
-
-  get currentClient$(): Observable<Client | undefined> {
-    return this.client$.asObservable();
-  }
-
-  emitCurrentClient(client: Client): void {
-    this.client$.next(client);
   }
 
   loadMoreClients(): Observable<{ data: Client[] }> {

@@ -1,29 +1,31 @@
 
-import { Injectable } from '@angular/core';
+import { computed, Injectable } from '@angular/core';
 import { QueryEntity } from '@datorama/akita';
-import { ClientSignalState, ClientSignalStore } from './client-signal.store';
-import { filter } from 'rxjs';
+import { ClientSignalsState, ClientSignalsStore } from './client.store';
 import { ClientStatus } from '../enum/client.status.enum';
 import { Client } from '../model/client.model';
 
 
 @Injectable({ providedIn: 'root' })
-export class ClientSignalQuery extends QueryEntity<ClientSignalState> {
-  constructor(protected override store: ClientSignalStore) {
+export class ClientSignalsQuery extends QueryEntity<ClientSignalsState> {
+  constructor(protected override store: ClientSignalsStore) {
     super(store);
   }
+  hasMore = computed(() => this.getValue().hasMore);
+  currentPage = computed(() => this.getValue().currentPage);
 
-  selectFirstClient() {
-    return this.selectFirst().pipe(
-      filter(client => !!client)
-    );
-  }
+  public clients = computed(() => this.getAll());
 
-  selectClientById(id: number) {
-    return this.selectEntity(id).pipe(
-      filter(client => !!client)
-    );
-  }
+  public firstClient = computed(() => {
+    return this.clients().length > 0 ? this.clients()[0] : null;
+  });
+
+  public selectClientById = (id: number) => computed(() => this.getEntity(id) ?? null);
+
+  public selectedClient = computed(() => {
+    const clients = this.clients();
+    return clients.find(client => client.statusui === ClientStatus.SELECTED) ?? null;
+  });
 
   moveClientToTop(id: number) {//modificar
     const ids = this.store.getValue().ids as number[];
@@ -57,6 +59,6 @@ export class ClientSignalQuery extends QueryEntity<ClientSignalState> {
     }
 
     this.store.update(newSelectedclientId, { statusui: ClientStatus.SELECTED });
-  } 
+  }  
 }
 

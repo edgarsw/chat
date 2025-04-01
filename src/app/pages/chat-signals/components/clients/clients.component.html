@@ -1,0 +1,27 @@
+<div class="scrollClient" (scroll)="onScrollClients($event)">
+    <mat-nav-list>
+        @for (client of clients(); track $index) {
+        <mat-list-item (click)="onSelectClient(client.idclient)" [style.background-color]="client?.statusui || ''">
+            <div class="content-clients">
+                <div>
+                    <div class="content-clients-phone">
+                        {{ client.mostrar_telefono }}
+                    </div>
+                    <div class="content-clients-name">
+                        {{client.nombre_cliente}}
+                    </div>
+                </div>
+                <div>
+                    @if (client.sentMessage) {
+                    <div class="content-clients-circle-badge">
+                        <span class="material-icons content-clients-circle-badge-icon">
+                            send
+                        </span>
+                    </div>
+                    }
+                </div>
+            </div>
+        </mat-list-item>
+        }
+    </mat-nav-list>
+</div>

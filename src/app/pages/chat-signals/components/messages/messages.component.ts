@@ -1,12 +1,12 @@
-import { ChangeDetectionStrategy, Component, ElementRef, ViewChild } from '@angular/core';
-import { catchError, filter, map, Observable, of, Subject, take, takeUntil, tap } from 'rxjs';
+import { ChangeDetectionStrategy, Component, effect, ElementRef, ViewChild } from '@angular/core';
+import { catchError, map, Observable, of, Subject, take, tap } from 'rxjs';
 import { CommonModule } from '@angular/common';
-import { MessageQuery } from '../../store/message.query';
-import { MessageStore } from '../../store/message.store';
-import { ClientQuery } from '../../store/client.query';
+import { MessageSignalsQuery } from '../../store/message.query';
+import { MessageSignalsStore } from '../../store/message.store';
+import { ClientSignalsQuery } from '../../store/client.query';
 import { LoadMessages, Message } from '../../model/messages.model';
 import { Client } from '../../model/client.model';
-import { MessageService } from '../../services/message.service';
+import { MessageSignalsService } from '../../services/message.service';
 import { scrollToBottomMessages } from '../../helpers/chat.helper';
 
 @Component({
@@ -27,16 +27,22 @@ export class MessagesComponent {
   protected selectedClientValue: Client | undefined;
 
   constructor(
-    private readonly messageService: MessageService,
-    private readonly messageStore: MessageStore,
-    private readonly messageQuery: MessageQuery,
-    private readonly clientQuery: ClientQuery,
-  ) { }
+    private readonly messageService: MessageSignalsService,
+    private readonly messageStore: MessageSignalsStore,
+    private readonly messageQuery: MessageSignalsQuery,
+    private readonly clientQuery: ClientSignalsQuery,
+  ) { 
+    effect(() => {
+      const load = this.messageService.loadMessages$();
+      if (load.loadMessages) {
+        this.loadMoreMessages(load.conversationId, load);
+      }
+    });
+  }
 
   ngOnInit() {
     this.messages$ = this.messageQuery.selectAll().pipe(map((messages: any[]) => { return [...messages] }));
     this.getClient();
-    this.loadMessages();
   }
 
   ngOnDestroy() {
@@ -45,23 +51,7 @@ export class MessagesComponent {
   }
 
   private getClient() {
-    this.clientQuery.selectedClient().pipe(
-      takeUntil(this.destroy$),
-      filter((client) => !!client),
-      tap((client) => { this.selectedClientValue = client }),
-    ).subscribe();
-  }
-
-  private loadMessages() {
-    this.messageService.loadMessages
-      .pipe(
-        takeUntil(this.destroy$),
-        tap((load) => {
-          if (load.loadMessages) {
-            this.loadMoreMessages(load.conversationId, load);
-          }
-        })
-      ).subscribe();
+    this.selectedClientValue = this.clientQuery.selectedClient()!;
   }
 
   protected onScrollMessages(event: Event) {

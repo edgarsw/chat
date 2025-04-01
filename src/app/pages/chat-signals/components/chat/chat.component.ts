@@ -1,13 +1,13 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, ViewChild } from '@angular/core';
-import { ClientService } from '../../services/client.service';
-import { ClientQuery } from '../../store/client.query';
+import { ClientSignalsService } from '../../services/client.service';
+import { ClientSignalsQuery } from '../../store/client.query';
 import { MatSidenav, MatSidenavModule } from '@angular/material/sidenav';
-import { filter, Observable, of, Subject, switchMap, takeUntil, tap } from 'rxjs';
+import { Observable, of, Subject, switchMap, takeUntil, tap } from 'rxjs';
 import { Client } from '../../model/client.model';
-import { MessageService } from '../../services/message.service';
-import { MessageStore } from '../../store/message.store';
-import { ClientStore } from '../../store/client.store';
+import { MessageSignalsService } from '../../services/message.service';
+import { MessageSignalsStore } from '../../store/message.store';
+import { ClientSignalsStore } from '../../store/client.store';
 import { ClientStatus } from '../../enum/client.status.enum';
 import { HeaderComponent } from '../header/header.component';
 import { MessagesComponent } from '../messages/messages.component';
@@ -37,11 +37,11 @@ export class ChatComponent {
   private destroy$ = new Subject<void>();
 
   constructor(
-    private readonly clientService: ClientService,
-    private readonly clientQuery: ClientQuery,
-    private readonly clientStore: ClientStore,
-    private readonly messageService: MessageService,
-    private readonly messageStore: MessageStore,
+    private readonly clientService: ClientSignalsService,
+    private readonly clientQuery: ClientSignalsQuery,
+    private readonly clientStore: ClientSignalsStore,
+    private readonly messageService: MessageSignalsService,
+    private readonly messageStore: MessageSignalsStore,
   ) { }
 
   ngOnInit(): void {
@@ -55,14 +55,7 @@ export class ChatComponent {
   }
 
   getClient() {
-    this.clientQuery.selectedClient()
-      .pipe(
-        takeUntil(this.destroy$),
-        filter((client) => !!client),
-        tap((client) => {
-          this.selectedClientValue = client;
-        })
-      ).subscribe();
+    this.selectedClientValue = this.clientQuery.selectedClient()!;
   }
 
   private connectWS() {
